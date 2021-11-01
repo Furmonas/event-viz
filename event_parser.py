@@ -5,6 +5,7 @@ import csv
 import PySimpleGUI as sg
 import cv2 as cv
 import numpy as np
+import argparse
 
 valueInSeparator = 0
 
@@ -76,40 +77,27 @@ class event_info:
             img[int(self.x),int(self.y)+1] = value
         if int(self.x) > 0:
             img[int(self.x)-1,int(self.y)] = value
-            
 
-def main(argv):
-    fileName = ''
-    size = (0,0)
-    try:
-        opts, args = getopt.getopt(argv, "hi:s:", ["help","ifile=","size="])
-    except getopt.GetoptError:
-        print('Incorrect usage, use -h for help')
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            print('Event camera raw file visualizer')
-            print('Options:')
-            print('-h, --help             displays this message')
-            print('-i FILE --ifile=FILE   define csv input FILE, where raw event data is to be found (mandatory)')
-            print('-s SIZE --size=SIZE    define SIZE of the output window (by default 320x240)')
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            fileName = arg
-        elif opt in ("-s", "--size"):
-            temp = arg
-            size = tuple(map(int, temp.split('x')))
-    if fileName == '':
-        print('Incorrect usage, use -h for help')
-        sys.exit(2)
+
+def PrepareArguments():
+    parser = argparse.ArgumentParser(description='Event Camera Raw File Visualizer')
+    parser.add_argument('-i', '--input_file', required=True, type=str,
+                        help='Define CSV INPUT_FILE, where raw event data is to be found')
+    parser.add_argument('-s', '--window_size', default='320x240', type=str,
+                        help='Define WINDOW_SIZE of output window')
+    return parser
+
+def main():
+    parser = PrepareArguments()
+    args = parser.parse_args()
+    fileName = args.input_file
+    size = tuple(map(int, args.window_size.split('x')))
     print('Input file -', fileName)
     print('Image size -', size)
     return fileName, size
 
 if __name__ == "__main__":
-    fileName = ''
-    size = (320,240)
-    fileName, size = main(sys.argv[1:])
+    fileName, size = main()
     FullFileName = os.path.join(sys.path[0], fileName)
 
     img = np.zeros(size,dtype=np.uint8)
