@@ -1,14 +1,3 @@
-import os
-import getopt
-import sys
-import csv
-import PySimpleGUI as sg
-import cv2 as cv
-import numpy as np
-import argparse
-
-valueInSeparator = 0
-
 class event_info:
     def __init__(self):
         self.event_header = []
@@ -24,7 +13,7 @@ class event_info:
             csv_header[3] == "polarity"):
             self.event_header = csv_header
         else:
-            print('Header is corrupted')
+            raise NameError('CSV is corrupted -> need to have [timestamp, x, y, polarity] header')
 
     def get_next_line(self, csv):
         try:
@@ -77,57 +66,3 @@ class event_info:
             img[int(self.x),int(self.y)+1] = value
         if int(self.x) > 0:
             img[int(self.x)-1,int(self.y)] = value
-
-
-def PrepareArguments():
-    parser = argparse.ArgumentParser(description='Event Camera Raw File Visualizer')
-    parser.add_argument('-i', '--input_file', required=True, type=str,
-                        help='Define CSV INPUT_FILE, where raw event data is to be found')
-    parser.add_argument('-s', '--window_size', default='320x240', type=str,
-                        help='Define WINDOW_SIZE of output window')
-    return parser
-
-def main():
-    parser = PrepareArguments()
-    args = parser.parse_args()
-    fileName = args.input_file
-    size = tuple(map(int, args.window_size.split('x')))
-    print('Input file -', fileName)
-    print('Image size -', size)
-    return fileName, size
-
-if __name__ == "__main__":
-    fileName, size = main()
-    FullFileName = os.path.join(sys.path[0], fileName)
-
-    img = np.zeros(size,dtype=np.uint8)
-    img.fill(136)
-    next_read = []
-    read_ok = 0
-
-    if os.path.isfile(FullFileName):
-        with open(FullFileName, 'r') as file:
-            print('Starting visualize process, press q to exit')
-            csvreader = csv.reader(file)
-            events = event_info()
-            header = events.get_next_line(csvreader)
-            events.check_header(header)
-            print('Header content:')
-            print(events.event_header)
-            next_read = events.get_next_line(csvreader)
-            # vid_out = cv.VideoWriter('video.avi', cv.VideoWriter_fourcc('M','J','P','G'), 15, size)
-            while True:
-                read_ok = events.get_event_chunk(csvreader, img)
-                if read_ok != 0:
-                    # vid_out.write(img)
-                    cv.imshow('Single Channel Window', img)
-                    img.fill(136)
-                    if (cv.waitKey(1) & 0xFF == ord('q')):
-                        break
-                else:
-                    print('End of read!')
-                    break
-    else:
-        print('File does not exist -', FullFileName)
-
-    cv.destroyAllWindows()
