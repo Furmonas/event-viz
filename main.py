@@ -1,13 +1,12 @@
 # public inputs
 import os
 import sys
-import cv2 as cv
-import numpy as np
 import pandas as pd
 
 # personal inputs
 from option_parser import PrepareArguments
 from event_parser import event_info
+from visualize_events import viz_events
 
 def main():
     parser = PrepareArguments()
@@ -22,11 +21,6 @@ if __name__ == "__main__":
     fileName, size = main()
     FullFileName = os.path.join(sys.path[0], fileName)
 
-    img = np.zeros(size,dtype=np.uint8)
-    img.fill(136)
-    next_read = []
-    read_ok = 0
-
     if os.path.isfile(FullFileName):
         with open(FullFileName, 'r') as file:
             print('Starting visualize process, press q to exit')
@@ -34,18 +28,9 @@ if __name__ == "__main__":
             events = event_info()
             events.check_header(header)
             print('Header content: {}'.format(events.event_header))
-            # next_read = events.get_next_line(csvreader)
-            # while True:
-            #     read_ok = events.get_event_chunk(csvreader, img)
-            #     if read_ok != 0:
-            #         cv.imshow('Single Channel Window', img)
-            #         img.fill(136)
-            #         if (cv.waitKey(1) & 0xFF == ord('q')):
-            #             break
-            #     else:
-            #         print('End of read!')
-            #         break
+            if os.path.isfile(FullFileName):
+                event_visualizer = viz_events(size)
+                event_visualizer.start(FullFileName)
     else:
         print('File does not exist -', FullFileName)
 
-    cv.destroyAllWindows()
