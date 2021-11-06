@@ -507,11 +507,13 @@ def events_to_voxel_grid_pytorch(events, num_bins, width, height, device):
             # normalize the event timestamps so that they lie between 0 and num_bins
             last_stamp = events_torch[-1, 0]
             first_stamp = events_torch[0, 0]
+            # delta between first and last timestamp
             deltaT = last_stamp - first_stamp
 
             if deltaT == 0:
                 deltaT = 1.0
 
+            # normalize timestamps here -> so they would go from 0 to num_bin
             events_torch[:, 0] = (num_bins - 1) * (events_torch[:, 0] - first_stamp) / deltaT
             ts = events_torch[:, 0]
             xs = events_torch[:, 1].long()
@@ -519,8 +521,11 @@ def events_to_voxel_grid_pytorch(events, num_bins, width, height, device):
             pols = events_torch[:, 3].float()
             pols[pols == 0] = -1  # polarity should be +1 / -1
 
+            # Change all TSs to floors i. e. 0.125 -> 0, 1.98 -> 1, etc.
             tis = torch.floor(ts)
+            # type change to long
             tis_long = tis.long()
+            # Substract and get the same as before floor
             dts = ts - tis
             vals_left = pols * (1.0 - dts.float())
             vals_right = pols * dts.float()

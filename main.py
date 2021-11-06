@@ -26,17 +26,22 @@ if __name__ == "__main__":
 
     device = get_device(True)
 
+
     if os.path.isfile(FullFileName):
         event_window_iterator = FixedDurationEventReader(FullFileName)
         print('Starting visualize process, press q to exit')
         with Timer('Processing entire dataset'):
             for event_window in event_window_iterator:
                 last_timestamp = event_window[-1, 0]
+                # The event tensor here:
+                # Type of every element: torch.float32 -> event_tensor.dtype
+                # Number of axes: 3 -> event_tensor.ndim
+                # Shape of tensor: torch.Size([5, 240, 320]) -> event_tensor.shape
+                # Elements along axis 0 of tensor: 5 -> event_tensor.shape[0]
+                # Elements along the last axis of tensor: 240 -> event_tensor.shape[-1]
                 with Timer('Building event tensor'):
-                    event_tensor = events_to_voxel_grid_pytorch(event_window, 5, 240, 180, device)
-                
-                num_events_in_window = event_window.shape[0]
-
+                    event_tensor = events_to_voxel_grid_pytorch(event_window, 5, 320, 240, device)
     else:
         print('File does not exist -', FullFileName)
+
 

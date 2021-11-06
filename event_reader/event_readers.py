@@ -80,7 +80,11 @@ class FixedDurationEventReader:
                     t, x, y, pol = line.split(',')
                 else:
                     t, x, y, pol = line.split(' ')
-                t, x, y, pol = float(t), int(x), int(y), int(pol)
+                if self.is_csv_file:
+                    # Temp workaround -> because in my .csv files timestamp is not . separated -> it is uint, not float
+                    t, x, y, pol = float(t) / 1000000.0, int(x), int(y), int(pol)
+                else:
+                    t, x, y, pol = float(t), int(x), int(y), int(pol)
                 event_list.append([t, x, y, pol])
                 if self.last_stamp is None:
                     self.last_stamp = t
